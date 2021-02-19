@@ -35,8 +35,10 @@ class MPNetPlanner():
         for i in range(OBS_NUM):
             for j in range(NUM_DIM):
                 dist = abs(self.obstacles_xy[i][j] - config[j])
-                if dist > OBS_SIZE / 2.0:
+                if dist < OBS_SIZE / 2.0:
+                    is_collision = True
                     break
+
             if is_collision:
                 return is_collision
         return is_collision
@@ -108,7 +110,7 @@ class MPNetPlanner():
     @staticmethod
     def get_distance(x, y):
         dif = np.array(x) - np.array(y)
-        distance = np.norm(dif)
+        distance = np.linalg.norm(dif)
         return distance
 
     def reset(self, env):

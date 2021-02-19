@@ -16,24 +16,31 @@ class MPNetSimple2D(Environment):
         # set workspace
        
         # set start, end, obstacle, agent
-        x, y = np.min(self.obc_2d, axis=0) - 2
-        self.start = Point(x, y)
-        x, y = np.max(self.obc_2d, axis=0) + 2
-        self.end = Point(x, y)
-
+        
+        obc_min = np.min(self.obc_2d, axis=0) - 2
+        
+        obc_max = np.max(self.obc_2d, axis=0) + 2
+        self.workspace = [obc_min, obc_max]
+        
         self.obstacles_xy = []
         self.obstacles_clouds = np.reshape(self.obc_2d, (7, -1, 2))
         for i in range(7):
             obstacle_cloud = self.obstacles_clouds[i] # 200, 2
             x, y = np.mean(obstacle_cloud, axis=0)
             self.obstacles_xy.append((x, y))
+        
 
+        r_point = self.get_random_point()
+        self.start = Point(r_point[0], r_point[1])
+        r_point = self.get_random_point()
+        self.end = Point(r_point[0], r_point[1])
+        
         self.path = np.array([[self.start.x, self.start.y]])
 
     def visualize(self, next_config):
         plt.cla()
         # draw start and end
-        plt.scatter(self.start.x, self.start.x, c="g")
+        plt.scatter(self.start.x, self.start.y, c="g")
         plt.scatter(self.end.x, self.end.y, c="g")
 
         # draw agent
@@ -46,6 +53,28 @@ class MPNetSimple2D(Environment):
         plt.show(block=False)
         plt.pause(0.01)
     
+    def get_random_point(self):
+        val = np.random.uniform(self.workspace[0], self.workspace[1])
+        while self.collision_check(val):
+            val = np.random.uniform(self.workspace[0], self.workspace[1])
+        return val
+
+    def collision_check(self, point):
+        is_collision = False
+        for obs_xy in self.obstacles_xy:
+            for i in range(2):
+                dist = abs(obs_xy[i] - point[i])
+                if dist < 5 / 2.0:
+                    is_collision = True
+                    break
+
+            if is_collision:
+                return is_collision
+        return is_collision
+
+
+
+
     def get_obstacle_cloud(self):
         return self.obc
 

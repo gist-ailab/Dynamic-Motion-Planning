@@ -20,11 +20,13 @@ if __name__ == '__main__':
     mlp_weight = "mlp_weight.tar"
     planner = MPNetPlanner(cae_weight, mlp_weight)
 
-    for i in range(100):
+    for i in range(20):
         target_path = random.choice(obc_file_list)
         env = MPNetSimple2D(obc_file=target_path)
         planner.reset(env)
         for j in range(100):
             next_config = planner.get_next_config()
             env.visualize(next_config)
+            if planner.is_reaching_target():
+                break
 
