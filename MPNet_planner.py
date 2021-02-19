@@ -6,10 +6,12 @@ import torch.nn as nn
 import numpy as np
 import os
 import pickle
-from MPNet_models import MLP 
+from MPNet_models import MLP, Encoder
 from torch.autograd import Variable 
 import math
 import time
+
+import matplotlib.pyplot as plt
 
 OBS_NUM = 7
 NUM_DIM = 2 # for x, y
@@ -17,29 +19,60 @@ OBS_SIZE = 5
 DISCRETIZATION_STEP=0.01
 
 class MPNetPlanner():
-    def __init__(self, args):
-        self.planner = MLP(32, 2)
+    def __init__(self, args, obc_file):
+        # load pretrained encoder
+        self.encoder = Encoder().eval()
+        assert args.cae_weight, "No pretrained cae weight"
+        self.encoder.load_state_dict(torch.load(args.cae_weight), strict=False)
 
-        self.obc = None
+        # load pretrained planner
+        self.planner = MLP(args.input_size, args.output_size).eval()
+        assert args.load_weights, "No pretrained mlp weight"
+        self.planner.load_state_dict(torch.load(args.mlp_weights))
 
-        if args.load_weights:
-            self.planner.load_state_dict(torch.load(args.mlp_weights))
-        if torch.cuda.is_available():
-            self.planner.cuda()
+        # get obstacle cloud and representation
+        self.obc = np.fromfile(obc_file) # 2800
+        self.obs_rep = self.get_obs_representation() # 28
+        self.obc = np.reshape(self.obc, (-1, NUM_DIM)) # 1400, 2
+
+        # set workspace
+        self.min_dim = np.min(self.obc, axis=0) # DIM
+        self.max_dim = np.max(self.obc, axis=0) # DIM
+        self.workspace_size = (self.max_dim - self.min_dim) + 5 # DIM
+        self.workspace_size = np.append(self.workspace_size, 3) # [x, y, 3]
+        self.workspace = np.zeros(self.workspace_size, np.uint8)
         
-    def get_collision_state(self, x, idx):
+        # set visualize option
+        if len(self.workspace_size[:-1]) == 2:
+            print("The workspace is 2D")
+            self.plt = plt
+        elif len(self.workspace_size[:-1]) == 3:
+            print("The workspace is 3D")
+            assert False, "Not Implemented Yet"
+
+    def get_obs_representation(self):
+        obs_input = torch.from_numpy(self.obc).float()
+        obs_rep = self.encoder(obs_input)
+        return obs_rep.cpu().detach().numpy()
+
+    def get_start_and_goal_config(self):
+        start, goal = np.zeros(2), np.zeros(2)
+
+        return start, goal
+    
+    def get_collision_state(self, config):
         is_collision = False
         for i in range(OBS_NUM):
             for j in range(NUM_DIM):
-                dist = abs(self.obc[idx][i][j] - x[j])
+                dist = abs(self.obc[i][j] - config[j])
                 if dist > OBS_SIZE / 2.0:
                     break
             if is_collision:
                 return is_collision
         return is_collision
 
-    def steerTo(self, current, end, idx):
-        dif = np.array(end) - np.array(current)
+    def steerTo(self, start, end):
+        dif = np.array(end) - np.array(start)
         dist = np.linalg.norm(dif)
 
         if dist > 0:
@@ -48,14 +81,14 @@ class MPNetPlanner():
             
             numSegments = int(math.floor(incrementTotal))
 
-            current_state = copy.deepcopy(current)
+            current_state = copy.deepcopy(start)
             for i in range(numSegments):
-                if self.get_collision_state(current_state, idx):
+                if self.get_collision_state(current_state):
                     return False
                 
                 current_state = current_state + dif
 
-            if self.get_collision_state(end, idx):
+            if self.get_collision_state(end):
                 return False
 
         return True
@@ -84,7 +117,6 @@ class MPNetPlanner():
                     
 	    return path
 
-
     def feasibility_check(self, path, idx):
         for i in range(len(path) -1):
             tag = self.steerTo(path[i], path[i + 1], idx)
@@ -111,4 +143,19 @@ class MPNetPlanner():
         return distance
     
 
+    def bidirectional_planning(self, start, goal):
+        pass
+
+
+    def reset(self):
+        pass
+
+    def step(self):
+        if NUM_DIM == 2:
+            self.plt.cla()
+            self.plt.imshow(self.env)
+            self.plt.pause(0.01)
+        else:
+            assert False, "Not Implemented"
+        
 

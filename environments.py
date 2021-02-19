@@ -1,11 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
+from Dynamic_2D_env.entities import *
 
-from entities import *
+class Simple2D():
+    def __init__(self):
+        self.env = np.zeros([200, 200, 3], np.uint8)
+        pass
+
+    def reset(self):
+        pass
+
+    def step(self):
+        plt.imshow(self.env)
 
 
-if __name__ == '__main__':
 
     start = Zone(100, 200, size = [20,20], sim= None)
     end = Zone(100, 0, size=[20,20], sim= None)
@@ -15,7 +23,7 @@ if __name__ == '__main__':
 
     for i in range(100):
         plt.cla()
-        env = np.zeros([200, 200, 3], np.uint8)
+        
 
         start.draw(env)
         end.draw(env)
