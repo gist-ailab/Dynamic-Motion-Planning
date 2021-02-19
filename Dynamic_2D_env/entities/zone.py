@@ -4,8 +4,8 @@ import cv2
 from .base_entity import Entity
 
 class Zone(Entity):
-    def __init__(self, x, y, size, sim, color='b'):
-        super(Zone, self).__init__(x,y,sim,color)
+    def __init__(self, x, y, size, color='b'):
+        super(Zone, self).__init__(x,y,color)
 
         self.size = size
 
