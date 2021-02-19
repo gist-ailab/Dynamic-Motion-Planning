@@ -1,5 +1,5 @@
-from environments.environment import Environment
-from environments.dynamic_2D import Dynamic2D
+from .environment import Environment
+from .dynamic_2d import Dynamic2D
 
 
 
