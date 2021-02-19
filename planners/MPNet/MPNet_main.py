@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from MPNet_dataset import ObstacleDataSet, PathDataSet
+from .MPNet_dataset import ObstacleDataSet, PathDataSet
 
-from MPNet_models import MLP, CAE
+from .MPNet_models import MLP, CAE
 
 from tqdm import tqdm
 from os.path import join

@@ -5,7 +5,7 @@ import numpy as np
 import math
 import copy
 
-from MPNet.MPNet_models import MLP, Encoder
+from .MPNet.MPNet_models import MLP, Encoder
 
 OBS_NUM = 7
 NUM_DIM = 2 # for x, y
@@ -13,7 +13,7 @@ OBS_SIZE = 5
 DISCRETIZATION_STEP=0.01
 
 class MPNetPlanner():
-    def __init__(self, args, obc_file):
+    def __init__(self, args):
         # load pretrained encoder
         self.encoder = Encoder().eval()
         assert args.cae_weight, "No pretrained cae weight"
@@ -25,24 +25,12 @@ class MPNetPlanner():
         self.planner.load_state_dict(torch.load(args.mlp_weights))
 
         # get obstacle cloud and representation
-        self.obc = np.fromfile(obc_file) # 2800
         self.obs_rep = self.get_obs_representation() # 28
-        self.obc = np.reshape(self.obc, (-1, NUM_DIM)) # 1400, 2
-
-        # set workspace
-        self.min_dim = np.min(self.obc, axis=0) # DIM
-        self.max_dim = np.max(self.obc, axis=0) # DIM
-        self.workspace_size = (self.max_dim - self.min_dim) + 5 # DIM
-        self.workspace_size = np.append(self.workspace_size, 3) # [x, y, 3]
-        self.workspace = np.zeros(self.workspace_size, np.uint8)
         
-        # set visualize option
-        if len(self.workspace_size[:-1]) == 2:
-            print("The workspace is 2D")
-            self.plt = plt
-        elif len(self.workspace_size[:-1]) == 3:
-            print("The workspace is 3D")
-            assert False, "Not Implemented Yet"
+        # planning config
+        self.start = None
+        self.goal = None
+        self.current = self.start
 
     def get_obs_representation(self):
         obs_input = torch.from_numpy(self.obc).float()
@@ -138,18 +126,10 @@ class MPNetPlanner():
     
 
     def bidirectional_planning(self, start, goal):
+
         pass
 
-
-    def reset(self):
-        pass
-
-    def step(self):
-        if NUM_DIM == 2:
-            self.plt.cla()
-            self.plt.imshow(self.env)
-            self.plt.pause(0.01)
-        else:
-            assert False, "Not Implemented"
+    def plan(self, env, start, goal):
+        env.get_obstacle_cloud()
         
 

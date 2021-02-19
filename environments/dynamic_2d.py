@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from .entities import Zone, Obstacle
+from .environment import Environment
 
-class Dynamic2D():
+class Dynamic2D(Environment):
     def __init__(self):
         self.reset()
 
@@ -43,3 +44,6 @@ class Dynamic2D():
         config = None
         return config
 
+    def get_obstacle_cloud(self): # used for MPNet input
+        obstacle_point_cloud = np.zeros((1400, 2))
+        return obstacle_point_cloud
