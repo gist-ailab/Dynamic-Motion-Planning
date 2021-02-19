@@ -1,2 +1,0 @@
-### visuaiization
-python visualize.py 

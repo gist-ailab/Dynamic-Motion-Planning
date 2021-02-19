@@ -1,17 +1,11 @@
-import argparse
-import copy
 import torch
-from torch._C import dtype
-import torch.nn as nn
-import numpy as np
-import os
-import pickle
-from MPNet_models import MLP, Encoder
 from torch.autograd import Variable 
-import math
-import time
 
-import matplotlib.pyplot as plt
+import numpy as np
+import math
+import copy
+
+from MPNet.MPNet_models import MLP, Encoder
 
 OBS_NUM = 7
 NUM_DIM = 2 # for x, y

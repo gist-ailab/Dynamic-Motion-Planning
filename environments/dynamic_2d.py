@@ -1,3 +1,10 @@
+
+from environments.environment import Environment
+
+class Dynamic2D(Environment):
+    pass
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 from Dynamic_2D_env.entities import *

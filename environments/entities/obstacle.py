@@ -1,7 +1,8 @@
 import numpy as np
 import cv2
 
-from .base_entity import Entity
+
+from .entity import Entity
 
 class Obstacle(Entity):
     def __init__(self, x, y, size, transform, sim, color='r'):
