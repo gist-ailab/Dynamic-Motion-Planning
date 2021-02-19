@@ -10,6 +10,6 @@ class PointAgent(Entity):
     def set_pos(self, x, y):
         self.x = x
         self.y = y
-    
+        
     def draw(self, env_npy):
-        cv2.circle(env_npy, [self.x, self.y], radian = 1, color = self.color, thickness=-1)
+        cv2.circle(env_npy, (self.x, self.y), radius = 1, color = self.color, thickness=-1)

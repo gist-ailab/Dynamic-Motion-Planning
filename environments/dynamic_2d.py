@@ -26,7 +26,7 @@ class Dynamic2D(Environment):
     def step(self):
         plt.imshow(self.env)
 
-    def visualize(self, t):
+    def visualize(self):
         plt.cla()
         env = np.zeros([*self.size, 3], np.uint8)
         self.start.draw(env)
