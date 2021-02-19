@@ -23,7 +23,7 @@ class MPNetPlanner():
         self.obc = None
 
         if args.load_weights:
-            self.planner.load_state_dict(torch.load(args.load_weights))
+            self.planner.load_state_dict(torch.load(args.mlp_weights))
         if torch.cuda.is_available():
             self.planner.cuda()
         

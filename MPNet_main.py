@@ -196,8 +196,9 @@ def train_mlp(args):
         print("validation result, epoch {}: {}".format(epoch, val_loss))
         if epoch % 5 == 0:
             torch.save(model.state_dict(), '{}/epoch_{}.tar'.format(output_folder, epoch))
+
 def test_mlp(args):
-    pass
+    pass 
 
 
 if __name__=="__main__":
@@ -220,6 +221,7 @@ if __name__=="__main__":
     # mlp setting
     parser.add_argument('--input_size', type=int , default=32, help='dimension of the input vector')
     parser.add_argument('--output_size', type=int , default=2, help='dimension of the input vector')
+    parser.add_argument("--mlp_weight", type=str, default=None, help="path to the pretrained weights")
 
     # inference
     parser.add_argument("--output_folder", type=str, default='results', help="path to the dataset root")
