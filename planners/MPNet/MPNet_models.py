@@ -27,7 +27,6 @@ class Decoder(nn.Module):
 		x = self.decoder(x)
 		return x
 
-
 class CAE(nn.Module):
     def __init__(self):
         super(CAE, self).__init__()
