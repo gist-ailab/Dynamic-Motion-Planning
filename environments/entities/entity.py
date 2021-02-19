@@ -2,10 +2,9 @@ import numpy as np
 from abc import *
 
 class Entity():
-    def __init__(self, x, y, sim, color='r'):
+    def __init__(self, x, y, color='r'):
         self.x=x
         self.y=y
-        self.sim=sim
 
 
         if color == 'r':

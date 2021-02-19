@@ -5,8 +5,8 @@ import cv2
 from .entity import Entity
 
 class Obstacle(Entity):
-    def __init__(self, x, y, size, transform, sim, color='r'):
-        super(Obstacle, self).__init__(x,y,sim,color)
+    def __init__(self, x, y, size, transform, color='r'):
+        super(Obstacle, self).__init__(x,y,color)
 
         self.transform = transform
         self.size = size
