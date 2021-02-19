@@ -15,7 +15,12 @@ class MPNetSimple2D(Environment):
         self.size = (self.max_dim - self.min_dim) + 5 # DIM
         
         # set start, end, obstacle, agent
+        self.start = Zone()
+        self.end = Zone()
+        self.agent = 
+        self.obstacles = []
         
+
 
 
         
