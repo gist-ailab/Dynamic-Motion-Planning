@@ -5,7 +5,8 @@ import numpy as np
 import math
 import copy
 
-from .MPNet.MPNet_models import MLP, Encoder
+import torch.nn as nn
+from .MPNet.MPNet_models import MLP, Encoder, Decoder, CAE
 
 OBS_NUM = 7
 NUM_DIM = 2 # for x, y
@@ -18,8 +19,14 @@ class MPNetPlanner():
         self.encoder = Encoder().eval()
         self.encoder.load_state_dict(torch.load(cae_weight), strict=False)
 
+        self.decoder = Decoder().eval()
+        self.decoder.load_state_dict(torch.load(cae_weight), strict=False)
+
+        self.CAE = CAE().eval()
+        self.CAE.load_state_dict(torch.load(cae_weight))
+
         # load pretrained planner
-        self.planner = MLP(32, 2).eval()
+        self.planner = MLP(32, 2)
         self.planner.load_state_dict(torch.load(mlp_weight))
 
         self.env = None
@@ -27,8 +34,13 @@ class MPNetPlanner():
 
     def get_obs_representation(self):
         obs_input = torch.from_numpy(self.obs_cloud).float()
-        obs_rep = self.encoder(obs_input)
+        obs_rep = self.CAE.encode(obs_input)
         return obs_rep.cpu().detach().numpy()
+
+    def get_obs_decoded_view(self):
+        obs_input = torch.from_numpy(self.obs_cloud).float()
+        obs_output = self.CAE(obs_input)
+        return obs_output.cpu().detach().numpy()
 
     def check_collision(self, config):
         is_collision = False
@@ -68,6 +80,8 @@ class MPNetPlanner():
     def is_reaching_target(self):
         distance = self.get_distance(self.current, self.end)
         if distance > 1.0:
+            if self.steerTo(self.current, self.end):
+                return True
             return False
         else:
             return True
@@ -120,6 +134,7 @@ class MPNetPlanner():
         self.obs_cloud = self.env.get_obstacle_cloud()
         self.obs_rep = self.get_obs_representation() # 28
         self.obstacles_xy = self.env.obstacles_xy
+        self.obs_dec = self.get_obs_decoded_view()
 
         # planning config
         self.start, self.end = self.env.get_start_and_end()
@@ -129,7 +144,7 @@ class MPNetPlanner():
         assert self.env, "No workspace" 
         obs_rep = torch.Tensor(self.obs_rep)
         cur_conf = torch.Tensor(self.current)
-        end_conf = torch.Tensor(self.end)
+        end_conf = torch.Tensor(self.end)        
         
         planner_inp = torch.cat((obs_rep, cur_conf, end_conf))
         next_conf = self.planner(planner_inp)

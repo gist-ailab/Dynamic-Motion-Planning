@@ -20,9 +20,11 @@ import neptune
 RAEYO_TOKEN="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL3VpLm5lcHR1bmUuYWkiLCJhcGlfa2V5IjoiNDkwNTM5ODktODFiOC00OWI3LWE1YmYtYmQxMjYxZTliZjMwIn0="
 from file_utils import *
 
+from adabelief_pytorch import AdaBelief
 
-mpnet_data_root = "/home/raeyo/dev_tools/MotionPlanning/MPNet/MPNetDataset"
-S2D_data_path = join(mpnet_data_root, "S2D")
+
+mpnet_data_root = "./"
+S2D_data_path = mpnet_data_root #join(mpnet_data_root, ".")
 
 S3D_data_path = join(mpnet_data_root, "S3D")
 
@@ -127,13 +129,15 @@ def train_mlp(args):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     assert args.cae_weight, "No trained cae weight"
-    encoder = CAE().encoder.to(device)
-    encoder.eval()
-    encoder.load_state_dict(torch.load(args.cae_weight), strict=False)
+    cae = CAE().to(device)
+    cae.eval()
+    cae.load_state_dict(torch.load(args.cae_weight))
 
-    train_dataset = PathDataSet(S2D_data_path, encoder)
-    val_dataset = PathDataSet(S2D_data_path, encoder, is_val=True)
+    print('a')
+    train_dataset = PathDataSet(S2D_data_path, cae.encoder)
+    val_dataset = PathDataSet(S2D_data_path, cae.encoder, is_val=True)
 
+    print('b')
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
     
@@ -147,7 +151,8 @@ def train_mlp(args):
         model.load_state_dict(torch.load(args.load_weights))
 
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adagrad(model.parameters())
+    # optimizer = torch.optim.Adagrad(model.parameters())
+    optimizer = AdaBelief(model.parameters(), lr=1e-4, eps=1e-10, betas=(0.9,0.999), weight_decouple = True, rectify = False)
 
     for epoch in range(args.max_epoch):
         model.train()
@@ -206,7 +211,7 @@ if __name__=="__main__":
     # training hyperparameter
     parser.add_argument("-e","--max_epoch", type=int, default=200, help="number of epochs for training")
     parser.add_argument("--lr", type=float, default=1e-4, help="learning rate")
-    parser.add_argument("-bs","--batch_size", type=int, default=4, help="batch size")
+    parser.add_argument("-bs","--batch_size", type=int, default=512, help="batch size")
     
     # data loader
     parser.add_argument("--num_workers", type=int, default=6, help="number of workers for data loader")
@@ -216,7 +221,7 @@ if __name__=="__main__":
     parser.add_argument("--load_weights", type=str, default=None, help="path to the pretrained weights")
 
     # cae setting
-    parser.add_argument("--cae_weight", type=str, default="./results/2021-02-18_18-44-22/epoch_100.tar", help="path to the pretrained weights")
+    parser.add_argument("--cae_weight", type=str, default="./cae_weight.tar", help="path to the pretrained weights")
     # mlp setting
     parser.add_argument('--input_size', type=int , default=32, help='dimension of the input vector')
     parser.add_argument('--output_size', type=int , default=2, help='dimension of the input vector')
@@ -242,6 +247,7 @@ if __name__=="__main__":
         if not args.test:
             neptune.init(api_token=RAEYO_TOKEN, project_qualified_name='raeyo/MPNet')
             neptune.create_experiment('Train MLP S2D')
+            neptune.append_tag("adabelief")
             train_mlp(args)
         else:
             test_mlp(args)

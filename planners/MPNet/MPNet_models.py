@@ -41,6 +41,10 @@ class CAE(nn.Module):
         x = self.decoder(x)
         return x
     
+    def encode(self, x):
+        x = self.encoder(x)
+        return x
+
     def get_loss(self, x, recons_x):
         mse_loss = self.mse_loss(recons_x, x)
         """

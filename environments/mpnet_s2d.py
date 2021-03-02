@@ -53,6 +53,32 @@ class MPNetSimple2D(Environment):
         plt.show(block=False)
         plt.pause(0.01)
     
+    def decoder_view(self, decoder_view):
+        self.dobc_2d = np.reshape(decoder_view, (-1, 2)) # 1400, 2
+        self.dobc_2d = self.dobc_2d #* 200
+        print(self.obc_2d, self.obc_2d.shape)
+        print(self.dobc_2d, self.dobc_2d.shape)
+
+
+    def visualize_with_decodedview(self, next_config):        
+        plt.cla()
+        plt.scatter(self.start.x, self.start.y, c="g")
+        plt.scatter(self.end.x, self.end.y, c="g")
+
+        # draw agent
+        self.path = np.append(self.path, [next_config], axis=0)
+        plt.scatter(self.path[1:, 0], self.path[1:, 1], c="r")
+
+        # draw obstacle map
+        plt.scatter(self.obc_2d[:,0], self.obc_2d[:,1], c="b")
+
+        # draw decoder_view of obstacle map
+        plt.scatter(self.dobc_2d[:,0], self.dobc_2d[:,1], c ='y')
+        
+        plt.show(block=False)
+        # plt.show()
+        plt.pause(0.01)
+
     def get_random_point(self):
         val = np.random.uniform(self.workspace[0], self.workspace[1])
         while self.collision_check(val):
@@ -71,9 +97,6 @@ class MPNetSimple2D(Environment):
             if is_collision:
                 return is_collision
         return is_collision
-
-
-
 
     def get_obstacle_cloud(self):
         return self.obc
