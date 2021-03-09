@@ -21,26 +21,31 @@ class Obstacle:
         self.set_restitution(10) # 0 ~ 10
         
         self.velocity_scale = np.linalg.norm(np.array(velocity))
+        self.initial_velocity = velocity
         self.set_velocity(velocity)
 
-    def update(self):
-        """Update Obstacle config
-            - keep velocity scale
+    def update_shape(self):
+        """Update Obstacle shape
             - scale
         """
-        current_velocity = self.get_velocity()
-        current_scale = np.linalg.norm(np.array(current_velocity))
-        if current_scale < self.velocity_scale:
-            velocity = list(np.array(current_velocity) * self.velocity_scale / current_scale)
-            self.set_velocity(velocity)
-
         if (self.respiration_count // self.respiration_cycle) % 2 == 0:
-            scaling_factor = [1.001] * 3
+            scaling_factor = [1.01] * 3
         else:
-            scaling_factor = [0.999] * 3
+            scaling_factor = [0.99] * 3
         self.respiration_count += 1
         self.set_size_by_factor(scaling_factor)
-    
+
+    def keep_velocity(self):
+        current_velocity = self.get_velocity()
+        current_scale = np.linalg.norm(np.array(current_velocity))
+        if sum(current_velocity) == 0:
+            self.set_velocity(self.initial_velocity)
+        elif current_scale < self.velocity_scale:
+            velocity = list(np.array(current_velocity) * self.velocity_scale / current_scale)
+            self.set_velocity(velocity)
+        else:
+            pass
+
     def get_random_position(self):
         min_pos = np.array(self.workspace[0]) + np.array(self.size)
         max_pos = np.array(self.workspace[1]) - np.array(self.size)
@@ -103,7 +108,7 @@ class Obstacle:
         max_size = (max_pos - min_pos) / 5
 
         size = np.random.uniform(min_size, max_size)
-        velocity = np.random.uniform(max_size)
+        velocity = np.random.uniform(-1*max_size, max_size)
         type = random.choice(list(PrimitiveShape))
         # type = PrimitiveShape.SPHERE
 

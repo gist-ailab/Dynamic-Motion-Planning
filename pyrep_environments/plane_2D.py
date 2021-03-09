@@ -51,19 +51,20 @@ class Plane2D:
     def reset(self, obstacle_num=3):
         for obstacle in self.obstacles:
             obstacle.remove()
+        self._pr.step()
+        
         self.obstacles = []
         for i in range(obstacle_num):
-            obs = Obstacle.create_random_obstacle(self.workspace, cycle=100)
+            obs = Obstacle.create_random_obstacle(self.workspace, cycle=10)
             self.obstacles.append(obs)
-        self._pr.step()
-
+        
     def step(self):
         # update config
         for obs in self.obstacles:
-            obs.update()
+            obs.keep_velocity()
+            obs.update_shape()
         self._pr.step()
-        # move it
-        self._pr.step()
+
 
     def check_collision(self):
         is_collision = False

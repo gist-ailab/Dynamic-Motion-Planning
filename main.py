@@ -62,11 +62,12 @@ if __name__ == '__main__':
     episode_num = 10
     episode_length = 1000
     for i in range(episode_num):
-        obstacle_num = np.random.randint(10)
+        obstacle_num = np.random.randint(3, 10)
         env.reset(obstacle_num=obstacle_num)
 
         for j in range(episode_length):
             env.step()
+            time.sleep(0.01)
 
             
 
