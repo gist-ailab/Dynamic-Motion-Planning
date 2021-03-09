@@ -6,7 +6,6 @@ class Entity():
         self.x=x
         self.y=y
 
-
         if color == 'r':
             self.color = [0, 0, 255]
         elif color == 'g':

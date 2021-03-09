@@ -3,13 +3,8 @@ import numpy as np
 # from .entities import Zone, Obstacle, PointAgent
 from .environment import Environment
 
-class Point():
-    def __init__(self, x=0, y=0):
-        self.x = x
-        self.y = y
-
 class MPNetSimple2D(Environment):
-    def __init__(self, obc_file):
+    def __init__(self, obc_file, path_file=None):
         self.obc = np.fromfile(obc_file) # 2800
         self.obc_2d = np.reshape(self.obc, (-1, 2)) # 1400, 2
         
@@ -29,19 +24,23 @@ class MPNetSimple2D(Environment):
             x, y = np.mean(obstacle_cloud, axis=0)
             self.obstacles_xy.append((x, y))
         
+        self.true_path = None
+        if path_file is not None:
+            true_path = np.fromfile(path_file)
+            self.true_path = true_path.reshape(-1, 2).astype(np.float32)
+            self.start = self.true_path[0]
+            self.end = self.true_path[-1]
+        else:
+            self.start = self.get_random_point()
+            self.end = self.get_random_point()
+            
+        self.path = np.array([[self.start[0], self.start[1]]])
 
-        r_point = self.get_random_point()
-        self.start = Point(r_point[0], r_point[1])
-        r_point = self.get_random_point()
-        self.end = Point(r_point[0], r_point[1])
-        
-        self.path = np.array([[self.start.x, self.start.y]])
-
-    def visualize(self, next_config):
+    def visualize(self, next_config d):
         plt.cla()
         # draw start and end
-        plt.scatter(self.start.x, self.start.y, c="g")
-        plt.scatter(self.end.x, self.end.y, c="g")
+        plt.scatter(self.start[0], self.start[1], c="g")
+        plt.scatter(self.end[0], self.end[1], c="g")
 
         # draw agent
         self.path = np.append(self.path, [next_config], axis=0)
@@ -53,17 +52,16 @@ class MPNetSimple2D(Environment):
         plt.show(block=False)
         plt.pause(0.01)
     
-    def decoder_view(self, decoder_view):
-        self.dobc_2d = np.reshape(decoder_view, (-1, 2)) # 1400, 2
-        self.dobc_2d = self.dobc_2d #* 200
-        print(self.obc_2d, self.obc_2d.shape)
-        print(self.dobc_2d, self.dobc_2d.shape)
-
-
+    def set_decoder_view(self, decoder_view):
+        self.dobc_2d = decoder_view
+        
     def visualize_with_decodedview(self, next_config):        
         plt.cla()
-        plt.scatter(self.start.x, self.start.y, c="g")
-        plt.scatter(self.end.x, self.end.y, c="g")
+        plt.scatter(self.start[0], self.start[1], c="g")
+        plt.scatter(self.end[0], self.end[1], c="g")
+
+        if self.true_path is not None:
+            plt.scatter(self.true_path[1:-1, 0], self.true_path[1:-1, 1], c="c")
 
         # draw agent
         self.path = np.append(self.path, [next_config], axis=0)
@@ -102,10 +100,5 @@ class MPNetSimple2D(Environment):
         return self.obc
 
     def get_start_and_end(self):
-        return [self.start.x, self.start.y], [self.end.x, self.end.y]
+        return [self.start[0], self.start[1]], [self.end[0], self.end[1]]
         
-
-
-
-
-
