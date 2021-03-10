@@ -1,6 +1,7 @@
 from pyrep.objects.shape import Shape
 from pyrep.backend import sim
 from pyrep.const import PrimitiveShape
+import math
 
 class Obstacle:
     """Obstacle in CoppeliaSim Scene
@@ -10,18 +11,18 @@ class Obstacle:
         self.size = size
         self.type = type
         
-        self.obj = Shape.create(type, size=list(size))
+        self.obj = Shape.create(type, size=list(size),orientation=[0,0,0])
 
         self.set_mass(1e+2) # 1e-9
         self.set_friction(0) # 0 ~ 1000
         self.set_restitution(10) # 0 ~ 10
         
     #region Dynamic property
-    def set_velocity(self, velocity):
+    def set_velocity(self, lin_velocity, ang_velocity=[0,0,0]):
         handle = self.obj.get_handle()
-        self._set_velocity(handle=handle, lin_velocity=velocity)
+        self._set_velocity(handle=handle, lin_velocity=lin_velocity, ang_velocity=ang_velocity)
     def get_velocity(self):
-        return self.obj.get_velocity()[0]
+        return self.obj.get_velocity()
     def set_mass(self, mass: float):
         self.obj.set_mass(mass)
     def set_friction(self, friction: float):
@@ -65,6 +66,11 @@ class Obstacle:
         sim.lib.simScaleObject(handle, scaling_factor[0], scaling_factor[1], scaling_factor[2], 0)
 
     #endregion
+
+    #utils
+    @staticmethod
+    def _calculate_step_ratio(target_ratio, step_size):
+        return math.pow(target_ratio, 1 / step_size)
 
     def remove(self):
         self.obj.remove()

@@ -7,10 +7,10 @@ import os
 import random
 import numpy as np
 
-from pyrep_environments.obstacles import Obstacle3D
+from pyrep_environments.obstacles import Obstacle2D
 
 current_path = path.dirname(path.abspath(__file__))
-scene_file = join(current_path, "scene", "plane_2D.ttt") 
+scene_file = join(current_path, "scene", "plane_3D.ttt") 
 
 class Plane3D:
     def __init__(self, headless=False):
@@ -42,16 +42,19 @@ class Plane3D:
 
         self.obstacles = []
         for i in range(obstacle_num):
-            obs = Obstacle3D.create_random_obstacle(workspace=self.workspace,
+            obs = Obstacle2D.create_random_obstacle(workspace=self.workspace,
                                                     velocity_scale=velocity_scale,
                                                     respiration_cycle=respiration_cycle)
+            self._pr.step()
             self.obstacles.append(obs)
         
+
     def step(self):
         # update config
-        for obs in self.obstacles:
-            if self.velocity_scale > 0:
-                obs.keep_velocity()
-            if self.repiration_cycle > 0:
+        if self.repiration_cycle > 0:
+            for obs in self.obstacles:
                 obs.respire()
+        if self.velocity_scale > 0:
+            for obs in self.obstacles:
+                obs.keep_velocity()
         self._pr.step()

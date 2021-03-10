@@ -46,7 +46,8 @@ class Complex3D:
                                                   velocity_scale=velocity_scale,
                                                   respiration_cycle=respiration_cycle)
             self.obstacles.append(obs)
-        
+        self._pr.step()
+
     def step(self):
         # update config
         for obs in self.obstacles:

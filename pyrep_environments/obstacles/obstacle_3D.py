@@ -18,10 +18,26 @@ class Obstacle3D(Obstacle):
         
         self.respiration_cycle = respiration_cycle
         self.respiration_count = 0
+        self._initialize_respiration_ratio()
         
         self._initialize_position()
         self._initialize_velocity()
+
+    def _initialize_respiration_ratio(self):
+        x_ratio = np.random.uniform(1,3)
+        y_ratio = np.random.uniform(1,3)
+        z_ratio = np.random.uniform(1,3)
         
+        x_step_ratio = self._calculate_step_ratio(x_ratio, self.respiration_cycle)
+        y_step_ratio = self._calculate_step_ratio(y_ratio, self.respiration_cycle)
+        z_step_ratio = self._calculate_step_ratio(z_ratio, self.respiration_cycle)
+        self.upsize_ratio = np.array([x_step_ratio -1 , y_step_ratio-1, z_step_ratio-1])
+
+        x_step_ratio = self._calculate_step_ratio(1/x_ratio, self.respiration_cycle)
+        y_step_ratio = self._calculate_step_ratio(1/y_ratio, self.respiration_cycle)
+        z_step_ratio = self._calculate_step_ratio(1/z_ratio, self.respiration_cycle)
+        self.downsize_ratio = np.array([1-x_step_ratio , 1-y_step_ratio, 1-z_step_ratio])
+
     def _initialize_position(self):
         position = self.get_random_position()
         self.obj.set_position(list(position))
@@ -38,22 +54,24 @@ class Obstacle3D(Obstacle):
             - scale
         """
         assert self.respiration_cycle > 0, "respiration cycle set to 0"
+        
         if (self.respiration_count // self.respiration_cycle) % 2 == 0:
-            scaling_factor = [1.01] * 3
+            scaling_factor = 1 + self.upsize_ratio
         else:
-            scaling_factor = [0.99] * 3
+            scaling_factor = 1 - self.downsize_ratio
+        
         self.respiration_count += 1
         self.set_size_by_factor(scaling_factor)
 
     def keep_velocity(self):
         assert self.velocity_scale > 0, "velocity scale is set to 0"
-        current_velocity = self.get_velocity()
+        current_velocity, current_ang = self.get_velocity()
         current_scale = np.linalg.norm(np.array(current_velocity))
         if sum(current_velocity) == 0:
             self.set_velocity(self.initial_velocity)
         elif current_scale < self.velocity_scale:
             velocity = list(np.array(current_velocity) * self.velocity_scale / current_scale)
-            self.set_velocity(velocity)
+            self.set_velocity(velocity, current_ang)
         else:
             pass
 

@@ -1,7 +1,7 @@
 
 from os.path import join
 
-from pyrep_environments import Complex3D
+from pyrep_environments import Complex3D, Plane3D
 
 from file_utils import get_file_list
 import random
@@ -57,6 +57,7 @@ def main():
 
 if __name__ == '__main__':
     env = Complex3D()
+    # env = Plane3D()
     episode_num = 10
     episode_length = 1000
     for i in range(episode_num):
@@ -67,7 +68,7 @@ if __name__ == '__main__':
 
         for j in range(episode_length):
             env.step()
-            time.sleep(0.01)
+            # time.sleep(0.01)
 
             
 
