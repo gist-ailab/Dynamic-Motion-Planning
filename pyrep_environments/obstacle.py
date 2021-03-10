@@ -2,78 +2,42 @@ from pyrep.objects.shape import Shape
 from pyrep.backend import sim
 from pyrep.const import PrimitiveShape
 
-import random
-import numpy as np
-
 class Obstacle:
-    def __init__(self, size, type: PrimitiveShape, velocity, workspace, respiration_cycle=10):
+    """Obstacle in CoppeliaSim Scene
+    - created based on PyRep Shape object
+    """
+    def __init__(self, size, type: PrimitiveShape):
         self.size = size
-        self.workspace = workspace # min pos, max pos
-        self.respiration_cycle = respiration_cycle
-        self.respiration_count = 0
+        self.type = type
+        
+        self.obj = Shape.create(type, size=list(size))
 
-        position = self.get_random_position()
-        self.obj = Shape.create(type, size=list(size), position=list(position))
-
-        self.obj.set_collidable(False)
         self.set_mass(1e+2) # 1e-9
         self.set_friction(0) # 0 ~ 1000
         self.set_restitution(10) # 0 ~ 10
         
-        self.velocity_scale = np.linalg.norm(np.array(velocity))
-        self.initial_velocity = velocity
-        self.set_velocity(velocity)
-
-    def update_shape(self):
-        """Update Obstacle shape
-            - scale
-        """
-        if (self.respiration_count // self.respiration_cycle) % 2 == 0:
-            scaling_factor = [1.01] * 3
-        else:
-            scaling_factor = [0.99] * 3
-        self.respiration_count += 1
-        self.set_size_by_factor(scaling_factor)
-
-    def keep_velocity(self):
-        current_velocity = self.get_velocity()
-        current_scale = np.linalg.norm(np.array(current_velocity))
-        if sum(current_velocity) == 0:
-            self.set_velocity(self.initial_velocity)
-        elif current_scale < self.velocity_scale:
-            velocity = list(np.array(current_velocity) * self.velocity_scale / current_scale)
-            self.set_velocity(velocity)
-        else:
-            pass
-
-    def get_random_position(self):
-        min_pos = np.array(self.workspace[0]) + np.array(self.size)
-        max_pos = np.array(self.workspace[1]) - np.array(self.size)
-        random_position = np.random.uniform(min_pos, max_pos)
-
-        return random_position
-
+    #region Dynamic property
     def set_velocity(self, velocity):
         handle = self.obj.get_handle()
         self._set_velocity(handle=handle, lin_velocity=velocity)
     def get_velocity(self):
         return self.obj.get_velocity()[0]
-
-    def set_mass(self, mass):
+    def set_mass(self, mass: float):
         self.obj.set_mass(mass)
-    def set_friction(self, friction):
+    def set_friction(self, friction: float):
         self.obj.set_bullet_friction(friction)
-    def set_restitution(self, restitution):
+    def set_restitution(self, restitution: float):
+        """set restitution for Object
+            larger restitution => more elastic
+        Args:
+            restitution (float): [0 ~ 10]
+        """
         handle = self.obj.get_handle()
         self._set_bullet_restitution(handle, restitution)
     def set_size_by_factor(self, scaling_factor):
-        # size_factor: 0.5 ~ 1.5
         handle = self.obj.get_handle()
         self._set_object_size_by_factor(handle, scaling_factor)
-        
-    def remove(self):
-        self.obj.remove()
-
+    
     @staticmethod
     def _set_velocity(handle, lin_velocity=[0, 0, 0], ang_velocity=[0, 0, 0]):
         # reset dynamic object
@@ -99,18 +63,9 @@ class Obstacle:
     def _set_object_size_by_factor(handle, scaling_factor):
         # sim.simSetObjectFloatParameter(handle, sim.sim_objfloatparam_size_factor, size_factor)
         sim.lib.simScaleObject(handle, scaling_factor[0], scaling_factor[1], scaling_factor[2], 0)
-    @staticmethod
-    def create_random_obstacle(workspace, cycle):
-        min_pos = np.array(workspace[0])
-        max_pos = np.array(workspace[1])
-        
-        min_size = (max_pos - min_pos) / 10
-        max_size = (max_pos - min_pos) / 5
 
-        size = np.random.uniform(min_size, max_size)
-        velocity = np.random.uniform(-1*max_size, max_size)
-        type = random.choice(list(PrimitiveShape))
-        # type = PrimitiveShape.SPHERE
+    #endregion
 
-        return Obstacle(size, type, velocity, workspace, respiration_cycle=cycle)
-
+    def remove(self):
+        self.obj.remove()
+    

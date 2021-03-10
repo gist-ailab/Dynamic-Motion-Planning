@@ -1,9 +1,7 @@
 
 from os.path import join
 
-# from planners import MPNetPlanner
-# from environments import Dynamic2D, MPNetSimple2D
-from pyrep_environments import Plane2D
+from pyrep_environments import Complex3D
 
 from file_utils import get_file_list
 import random
@@ -58,12 +56,14 @@ def main():
 
 
 if __name__ == '__main__':
-    env = Plane2D()
+    env = Complex3D()
     episode_num = 10
     episode_length = 1000
     for i in range(episode_num):
         obstacle_num = np.random.randint(3, 10)
-        env.reset(obstacle_num=obstacle_num)
+        env.reset(obstacle_num=obstacle_num,
+                  velocity_scale=1,
+                  respiration_cycle=100)
 
         for j in range(episode_length):
             env.step()
