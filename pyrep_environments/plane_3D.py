@@ -51,10 +51,9 @@ class Plane3D:
 
     def step(self):
         # update config
-        if self.repiration_cycle > 0:
-            for obs in self.obstacles:
+        for obs in self.obstacles:
+            if self.repiration_cycle > 0:
                 obs.respire()
-        if self.velocity_scale > 0:
-            for obs in self.obstacles:
+            if self.velocity_scale > 0:
                 obs.keep_velocity()
         self._pr.step()

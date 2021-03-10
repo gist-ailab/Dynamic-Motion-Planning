@@ -15,7 +15,7 @@ class Obstacle:
 
         self.set_mass(1e+2) # 1e-9
         self.set_friction(0) # 0 ~ 1000
-        self.set_restitution(10) # 0 ~ 10
+        self.set_restitution(0.1) # 0 ~ 10
         
     #region Dynamic property
     def set_velocity(self, lin_velocity, ang_velocity=[0,0,0]):

@@ -56,12 +56,12 @@ def main():
 
 
 if __name__ == '__main__':
-    env = Complex3D()
-    # env = Plane3D()
+    # env = Complex3D()
+    env = Plane3D()
     episode_num = 10
     episode_length = 1000
     for i in range(episode_num):
-        obstacle_num = np.random.randint(3, 10)
+        obstacle_num = np.random.randint(3, 5)
         env.reset(obstacle_num=obstacle_num,
                   velocity_scale=1,
                   respiration_cycle=100)
