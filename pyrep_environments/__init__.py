@@ -1,1 +1,2 @@
 from pyrep_environments.complex_3D import Complex3D
+from pyrep_environments.plane_3D import Plane3D

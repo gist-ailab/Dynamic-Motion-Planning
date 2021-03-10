@@ -10,9 +10,9 @@ import numpy as np
 from pyrep_environments.obstacles import Obstacle3D
 
 current_path = path.dirname(path.abspath(__file__))
-scene_file = join(current_path, "scene", "complex_3D.ttt") 
+scene_file = join(current_path, "scene", "plane_2D.ttt") 
 
-class Complex3D:
+class Plane3D:
     def __init__(self, headless=False):
         self._pr = PyRep()
         self._pr.launch(scene_file=scene_file, headless=headless)
@@ -43,8 +43,8 @@ class Complex3D:
         self.obstacles = []
         for i in range(obstacle_num):
             obs = Obstacle3D.create_random_obstacle(workspace=self.workspace,
-                                                  velocity_scale=velocity_scale,
-                                                  respiration_cycle=respiration_cycle)
+                                                    velocity_scale=velocity_scale,
+                                                    respiration_cycle=respiration_cycle)
             self.obstacles.append(obs)
         
     def step(self):
