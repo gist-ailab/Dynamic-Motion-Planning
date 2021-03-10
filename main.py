@@ -63,7 +63,7 @@ if __name__ == '__main__':
     for i in range(episode_num):
         obstacle_num = np.random.randint(3, 5)
         env.reset(obstacle_num=obstacle_num,
-                  velocity_scale=1,
+                  velocity_scale=0,
                   respiration_cycle=100)
 
         for j in range(episode_length):
