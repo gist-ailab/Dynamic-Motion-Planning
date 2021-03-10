@@ -1,6 +1,7 @@
 from pyrep import PyRep
 from pyrep.objects.joint import Joint
 from pyrep.objects.shape import Shape
+from pyrep.objects.vision_sensor import VisionSensor
 from os import path
 from os.path import join
 import os
@@ -20,6 +21,8 @@ class Plane3D:
 
         self.workspace_base = Shape("workspace")
         self.workspace = self._get_worksapce()
+        
+        self.camera = VisionSensor("camera")
         
         self.obstacles = []
         self.velocity_scale = 0
@@ -48,6 +51,9 @@ class Plane3D:
             self._pr.step()
             self.obstacles.append(obs)
         
+    def get_image(self):
+        rgb = self.camera.capture_rgb()
+        return rgb
 
     def step(self):
         # update config
